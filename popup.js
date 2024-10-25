@@ -1,13 +1,13 @@
 document.getElementById("start-btn").addEventListener(('click'), () => {
   chrome.action.setBadgeBackgroundColor({ color: "green" });
-  chrome.action.setBadgeText({ text: "3:00" });
+  chrome.action.setBadgeText({ text: "25" });
 
   chrome.alarms.create('stateChanged', {
-    periodInMinutes: 1 / 60,
+    periodInMinutes: 1,
   });
 
   chrome.alarms.create('main',{
-    delayInMinutes: 2,
+    delayInMinutes: 25,
   });
 
   chrome.storage.local.set({ state: 'focus', ciclesCount: 0 });
@@ -41,7 +41,7 @@ document.getElementById("continue-btn").addEventListener(('click'), () => {
     chrome.storage.local.set({ state: res.previousState });
 
     chrome.alarms.create('stateChanged', {
-      periodInMinutes: 1 / 60,
+      periodInMinutes: 1,
     });
 
     chrome.alarms.create('main',{
@@ -56,7 +56,7 @@ document.getElementById("stop-btn").addEventListener(('click'), () => {
   chrome.alarms.clear('main')
   chrome.alarms.clear('stateChanged')
   chrome.action.setBadgeText({ text: '' });
-  chrome.storage.local.set({ state: 'paused' });
+  chrome.storage.local.set({ state: 'stoped' });
 
   refreshState()
 })
@@ -69,13 +69,27 @@ document.getElementById("stop-btn").addEventListener(('click'), () => {
 
 function refreshState() {
   chrome.storage.local.get(['state', 'ciclesCount']).then((res) => {
-    let state = { paused: 'Paused', focus: 'Focusing', resting: 'Resting' }
+    let state = { stoped: 'Stoped', focus: 'Focusing', paused: 'Paused', resting: 'Resting' }
     document.getElementById('state').textContent = `#${res.ciclesCount} - ${state[res.state]}`
-  })
 
-  chrome.storage.local.get(['state']).then((res) => {
-    if (res.state == 'focus' || res.state == 'resting') {
-      document.getElementById('start-btn').style.visibility = "hidden";
+    document.getElementById('start-btn').style.display = "block";
+    document.getElementById('pause-btn').style.display = "block";
+    document.getElementById('continue-btn').style.display = "block";
+    document.getElementById('stop-btn').style.display = "block";
+
+    if (res.state == 'stoped') {
+      document.getElementById('pause-btn').style.display = "none";
+      document.getElementById('continue-btn').style.display = "none";
+      document.getElementById('stop-btn').style.display = "none";
+    } else if (res.state == 'focus') {
+      document.getElementById('start-btn').style.display = "none";
+      document.getElementById('continue-btn').style.display = "none";
+    } else if (res.state == 'paused') {
+      document.getElementById('start-btn').style.display = "none";
+      document.getElementById('pause-btn').style.display = "none";
+      document.getElementById('stop-btn').style.display = "none";
+    } else if (res.state == 'resting') {
+      document.getElementById('start-btn').style.display = "none";
     }
   })
 }
